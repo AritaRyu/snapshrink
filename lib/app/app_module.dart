@@ -11,6 +11,6 @@ class AppModule extends Module {
   List<ModularRoute> get routes => [
         ModuleRoute('/', module: HomeModule()),
         ModuleRoute('/camera', module: CameraModule()),
-        ModuleRoute('/settings', module: SettingsModule()),
+        //ModuleRoute('/settings', module: SettingsModule()),
       ];
 }

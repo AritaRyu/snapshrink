@@ -14,7 +14,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Settings')),
+      appBar: AppBar(title: const Text('Settings')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -32,7 +32,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   _imageQuality = value!;
                 });
               },
-              decoration: InputDecoration(labelText: 'Image Quality'),
+              decoration: const InputDecoration(labelText: 'Image Quality'),
             ),
             DropdownButtonFormField<String>(
               value: _imageFormat,
@@ -47,7 +47,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   _imageFormat = value!;
                 });
               },
-              decoration: InputDecoration(labelText: 'Image Format'),
+              decoration: const InputDecoration(labelText: 'Image Format'),
             ),
             DropdownButtonFormField<String>(
               value: _videoQuality,
@@ -62,7 +62,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   _videoQuality = value!;
                 });
               },
-              decoration: InputDecoration(labelText: 'Video Quality'),
+              decoration: const InputDecoration(labelText: 'Video Quality'),
             ),
             DropdownButtonFormField<String>(
               value: _videoFormat,
@@ -77,7 +77,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   _videoFormat = value!;
                 });
               },
-              decoration: InputDecoration(labelText: 'Video Format'),
+              decoration: const InputDecoration(labelText: 'Video Format'),
             ),
           ],
         ),

@@ -1,5 +1,8 @@
 import 'dart:io';
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:android_intent_plus/flag.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart'; // Import the url_launcher package
 import '../camera/camera_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -30,7 +33,7 @@ class _HomePageState extends State<HomePage> {
           });
         },
       ),
-      _buildSettingsContent(),
+      //_buildSettingsContent(),
     ];
   }
 
@@ -39,24 +42,30 @@ class _HomePageState extends State<HomePage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        Image(image: AssetImage('assets/LOGO.png'), height: 100), // Your logo
-        SizedBox(height: 20),
-        Text(
+        const Image(image: AssetImage('assets/LOGO.png'), height: 100), // Your logo
+        const SizedBox(height: 20),
+        const Text(
           'Seize The Moment',
           style: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold),
         ),
-        SizedBox(height: 30),
+        const SizedBox(height: 30),
+        // Button to open the gallery
+        ElevatedButton(
+          onPressed: _openGallery,
+          child: const Text('Open Gallery'),
+        ),
+        const SizedBox(height: 20),
         Expanded(
           child: _mediaPaths.isEmpty
-              ? Center(
+              ? const Center(
                   child: Text(
-                    'No media found.',
+                    '',
                     style: TextStyle(fontSize: 18),
                   ),
                 )
               : GridView.builder(
-                  padding: EdgeInsets.all(10),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  padding: const EdgeInsets.all(10),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
                     mainAxisSpacing: 10,
                     crossAxisSpacing: 10,
@@ -80,7 +89,7 @@ class _HomePageState extends State<HomePage> {
                               alignment: Alignment.center,
                               children: [
                                 Image.file(File(path), fit: BoxFit.cover),
-                                Icon(Icons.play_circle_fill, color: Colors.white, size: 50),
+                                const Icon(Icons.play_circle_fill, color: Colors.white, size: 50),
                               ],
                             )
                           : Image.file(File(path), fit: BoxFit.cover),
@@ -93,14 +102,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Settings tab content
-  Widget _buildSettingsContent() {
-    return Center(
-      child: Text(
-        'Settings Page Content',
-        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
+  // Widget _buildSettingsContent() {
+  //   return Center(
+  //     child: Text(
+  //       'Settings Page Content',
+  //       style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+  //     ),
+  //   );
+  // }
 
   // Navigation logic
   void _onItemTapped(int index) {
@@ -109,11 +118,36 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // Open gallery function
+  Future<void> _openGallery() async {
+    final platform = Theme.of(context).platform;
+
+    // For Android, open gallery using intent
+    if (platform == TargetPlatform.android) {
+      const intent = AndroidIntent(
+        action: 'action_view',
+        type: 'image/*',
+        flags: [Flag.FLAG_ACTIVITY_NEW_TASK],
+        );
+        intent.launch();
+    }
+
+    // For iOS, open the gallery using the Photos app
+    else if (platform == TargetPlatform.iOS) {
+      const url = 'photos-redirect://'; // Redirect to the Photos app
+      if (await canLaunch(url)) {
+        await launch(url);
+      } else {
+        throw 'Could not open the gallery.';
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'SnapShrink',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
@@ -129,10 +163,10 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(Icons.camera),
             label: 'Camera',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(Icons.settings),
+          //   label: 'Settings',
+          // ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.amber[800],
@@ -151,13 +185,12 @@ class FullScreenMediaView extends StatelessWidget {
   Widget build(BuildContext context) {
     final isVideo = path.endsWith('.mp4');
     return Scaffold(
-      appBar: AppBar(title: Text('Media View')),
+      appBar: AppBar(title: const Text('Media View')),
       body: Center(
         child: isVideo
-            ? Text('Video playback UI here (e.g., VideoPlayer)')
+            ? const Text('Video playback UI here (e.g., VideoPlayer)')
             : Image.file(File(path)),
       ),
     );
   }
 }
-

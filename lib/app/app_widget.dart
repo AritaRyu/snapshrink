@@ -6,8 +6,8 @@ class AppWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       theme: ThemeData(
-        primaryColor: Color(0xFFE8FFCE),
-        secondaryHeaderColor: Color(0xFFACFADF),
+        primaryColor: const Color(0xFFE8FFCE),
+        secondaryHeaderColor: const Color(0xFFACFADF),
       ),
       routeInformationParser: Modular.routeInformationParser,
       routerDelegate: Modular.routerDelegate,
