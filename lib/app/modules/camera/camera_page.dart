@@ -9,48 +9,53 @@ import 'package:video_compress/video_compress.dart';
 class CameraPage extends StatefulWidget {
   final Function(List<String>) onMediaCaptured;
 
-  CameraPage({required this.onMediaCaptured});
+  const CameraPage({super.key, required this.onMediaCaptured});
 
   @override
   _CameraPageState createState() => _CameraPageState();
 }
 
 class _CameraPageState extends State<CameraPage> {
-  late CameraController _cameraController;
-  late List<CameraDescription> cameras;
+  late CameraController? _cameraController;
+  List<CameraDescription> cameras = [];
   bool isInitialized = false;
   bool isRecording = false;
   bool isProcessing = false; // New state for "Please Wait"
   List<String> capturedMediaPaths = [];
+  late Future lazyInitialize;
 
   @override
   void initState() {
+    lazyInitialize = initializeCamera();
     super.initState();
-    initializeCamera();
+
   }
 
-  Future<void> initializeCamera() async {
+  Future initializeCamera() async {
     try {
       cameras = await availableCameras();
       _cameraController = CameraController(
         cameras[0],
         ResolutionPreset.high,
       );
-      await _cameraController.initialize();
+      
+      await _cameraController?.initialize();
       setState(() {
         isInitialized = true;
       });
+      return cameras;
     } catch (e) {
       print('Error initializing camera: $e');
     }
   }
 
-  Future<void> capturePhoto() async {
-    if (!_cameraController.value.isInitialized) return;
+  Future capturePhoto() async {
+    if( _cameraController != null){
+      if (!_cameraController!.value.isInitialized) return;
 
     try {
-      final image = await _cameraController.takePicture();
-      final fileBytes = await image.readAsBytes();
+      final image = await _cameraController?.takePicture();
+      final fileBytes = await image!.readAsBytes();
       final savedPath = await saveFileToGallery(
         fileBytes,
         'photo_${DateTime.now().millisecondsSinceEpoch}.jpg',
@@ -63,30 +68,34 @@ class _CameraPageState extends State<CameraPage> {
     } catch (e) {
       print('Error capturing photo: $e');
     }
+    }
   }
 
   Future<void> startRecording() async {
-    if (!_cameraController.value.isInitialized || isRecording) return;
+    if(_cameraController != null){
+      if (!_cameraController!.value.isInitialized || isRecording) return;
 
     try {
-      await _cameraController.startVideoRecording();
+      await _cameraController!.startVideoRecording();
       setState(() {
         isRecording = true;
       });
     } catch (e) {
       print('Error starting video recording: $e');
     }
+    }
   }
 
   Future<void> stopRecording() async {
-    if (!_cameraController.value.isRecordingVideo) return;
+    if(_cameraController != null){
+      if (!_cameraController!.value.isRecordingVideo) return;
 
     setState(() {
       isProcessing = true; // Show "Please Wait" message
     });
 
     try {
-      final video = await _cameraController.stopVideoRecording();
+      final video = await _cameraController!.stopVideoRecording();
       final compressedVideo = await compressVideo(File(video.path));
       final videoBytes = await compressedVideo.readAsBytes();
       final savedPath = await saveFileToGallery(
@@ -105,6 +114,7 @@ class _CameraPageState extends State<CameraPage> {
         isRecording = false;
         isProcessing = false; // Hide "Please Wait" message
       });
+    }
     }
   }
 
@@ -151,7 +161,7 @@ class _CameraPageState extends State<CameraPage> {
 
   @override
   void dispose() {
-    _cameraController.dispose();
+    _cameraController?.dispose();
     VideoCompress.cancelCompression();
     super.dispose();
   }
@@ -159,21 +169,25 @@ class _CameraPageState extends State<CameraPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
+      body: FutureBuilder(
+        future: lazyInitialize,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return Stack(
         children: [
           if (isInitialized)
             Positioned.fill(
-              child: CameraPreview(_cameraController),
+              child: CameraPreview(_cameraController!),
             )
           else
-            Center(child: CircularProgressIndicator()),
+            const Center(child: CircularProgressIndicator()),
           
           // "Please Wait" overlay
           if (isProcessing)
             Positioned.fill(
               child: Container(
                 color: Colors.black.withOpacity(0.5),
-                child: Center(
+                child: const Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -200,13 +214,13 @@ class _CameraPageState extends State<CameraPage> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
-                  onPressed: !_cameraController.value.isInitialized || isRecording
+                  onPressed: !_cameraController!.value.isInitialized || isRecording
                       ? null
                       : capturePhoto,
-                  child: Text('Capture Photo'),
+                  child: const Text('Capture Photo'),
                 ),
                 ElevatedButton(
-                  onPressed: !_cameraController.value.isInitialized || isProcessing
+                  onPressed: !_cameraController!.value.isInitialized || isProcessing
                       ? null
                       : isRecording
                           ? stopRecording
@@ -217,7 +231,12 @@ class _CameraPageState extends State<CameraPage> {
             ),
           ),
         ],
-      ),
+      );
+    } else {
+      return const Center(child: CircularProgressIndicator());
+    }
+  },
+),
     );
   }
 }
